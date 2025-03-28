@@ -1,14 +1,15 @@
 package com.taekwondo.tournament.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "tournaments")
@@ -25,26 +26,30 @@ public class Tournament {
     @NotNull(message = "Tournament date is required")
     private LocalDate date;
 
-    @NotNull(message = "Number of mats is required")
+    @Min(value = 1, message = "Number of mats must be at least 1")
     private Integer numberOfMats;
 
-    @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL)
-    private List<Match> matches = new ArrayList<>();
-
     @ElementCollection
-    @CollectionTable(name = "tournament_categories")
-    private List<BracketCategory> categories = new ArrayList<>();
+    @CollectionTable(name = "tournament_categories",
+            joinColumns = @JoinColumn(name = "tournament_id"))
+    private Set<TournamentCategory> categories = new HashSet<>();
+
+    @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL)
+    private Set<Match> matches = new HashSet<>();
 
     @Embeddable
     @Data
-    @NoArgsConstructor
-    public static class BracketCategory {
+    public static class TournamentCategory {
         @Enumerated(EnumType.STRING)
-        private Participant.Gender gender;
-        
+        private Gender gender;
+
+        @Min(value = 0)
+        private Integer minAge;
+
+        @Min(value = 0)
+        private Integer maxAge;
+
         @Enumerated(EnumType.STRING)
-        private Participant.SkillLevel skillLevel;
-        
-        private String ageGroup; // e.g., "0-11", "12-16", "16-35", "35+"
+        private SkillLevel skillLevel;
     }
 } 

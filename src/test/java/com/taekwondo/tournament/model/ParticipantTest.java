@@ -9,10 +9,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for the Participant entity.
@@ -51,8 +50,8 @@ class ParticipantTest {
         logger.info("Setting up valid participant data");
         participant.setName("John Doe");
         participant.setAge(25);
-        participant.setGender(Participant.Gender.MALE);
-        participant.setSkillLevel(Participant.SkillLevel.ADVANCED);
+        participant.setGender(Gender.Male);
+        participant.setSkillLevel(SkillLevel.BLACK_BELT);
 
         // When
         logger.info("Validating participant data");
@@ -77,8 +76,8 @@ class ParticipantTest {
         logger.info("Setting up participant with blank name");
         participant.setName("");
         participant.setAge(25);
-        participant.setGender(Participant.Gender.MALE);
-        participant.setSkillLevel(Participant.SkillLevel.ADVANCED);
+        participant.setGender(Gender.Male);
+        participant.setSkillLevel(SkillLevel.BLACK_BELT);
 
         // When
         logger.info("Validating participant data");
@@ -86,15 +85,25 @@ class ParticipantTest {
 
         // Then
         logger.info("Checking validation results");
-        assertEquals(1, violations.size(), "Should have exactly one validation error");
-        assertEquals("Name is required", violations.iterator().next().getMessage(), 
-            "Validation error should indicate that name is required");
-        logger.info("Test passed: Blank name validation error detected");
+        assertEquals(2, violations.size(), "Should have two validation errors");
+        assertTrue(
+            violations.stream()
+                .map(ConstraintViolation::getMessage)
+                .anyMatch(message -> message.equals("Name is required")),
+            "Should have 'Name is required' validation message"
+        );
+        assertTrue(
+            violations.stream()
+                .map(ConstraintViolation::getMessage)
+                .anyMatch(message -> message.equals("Name must be between 2 and 100 characters")),
+            "Should have length validation message"
+        );
+        logger.info("Test passed: Blank name validation errors detected");
     }
 
     /**
      * Test scenario: Negative participant age
-     * Expected: Validation error with message "Age must be positive"
+     * Expected: Validation error with message "Age must be at least 4 years"
      * - Age is negative (-1)
      * - Other fields are valid
      */
@@ -105,8 +114,8 @@ class ParticipantTest {
         logger.info("Setting up participant with negative age");
         participant.setName("John Doe");
         participant.setAge(-1);
-        participant.setGender(Participant.Gender.MALE);
-        participant.setSkillLevel(Participant.SkillLevel.ADVANCED);
+        participant.setGender(Gender.Male);
+        participant.setSkillLevel(SkillLevel.BLACK_BELT);
 
         // When
         logger.info("Validating participant data");
@@ -115,8 +124,8 @@ class ParticipantTest {
         // Then
         logger.info("Checking validation results");
         assertEquals(1, violations.size(), "Should have exactly one validation error");
-        assertEquals("Age must be positive", violations.iterator().next().getMessage(),
-            "Validation error should indicate that age must be positive");
+        assertEquals("Age must be at least 4 years", violations.iterator().next().getMessage(),
+            "Validation error should indicate that age must be at least 4 years");
         logger.info("Test passed: Negative age validation error detected");
     }
 
@@ -133,7 +142,7 @@ class ParticipantTest {
         logger.info("Setting up participant with missing gender");
         participant.setName("John Doe");
         participant.setAge(25);
-        participant.setSkillLevel(Participant.SkillLevel.ADVANCED);
+        participant.setSkillLevel(SkillLevel.BLACK_BELT);
 
         // When
         logger.info("Validating participant data");
@@ -160,7 +169,7 @@ class ParticipantTest {
         logger.info("Setting up participant with missing skill level");
         participant.setName("John Doe");
         participant.setAge(25);
-        participant.setGender(Participant.Gender.MALE);
+        participant.setGender(Gender.Male);
 
         // When
         logger.info("Validating participant data");

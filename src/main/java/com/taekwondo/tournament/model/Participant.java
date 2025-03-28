@@ -1,26 +1,27 @@
 package com.taekwondo.tournament.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "participants")
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Participant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
 
-    @NotNull(message = "Age is required")
-    @Min(value = 0, message = "Age must be positive")
+    @Min(value = 4, message = "Age must be at least 4 years")
+    @Max(value = 100, message = "Age must be less than 100 years")
     private Integer age;
 
     @NotNull(message = "Gender is required")
@@ -33,13 +34,6 @@ public class Participant {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "club_id")
+    @JsonIgnoreProperties("participants")
     private Club club;
-
-    public enum Gender {
-        MALE, FEMALE, OTHER
-    }
-
-    public enum SkillLevel {
-        BEGINNER, ADVANCED
-    }
 } 

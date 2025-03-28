@@ -9,10 +9,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for the Club entity.
@@ -124,8 +123,8 @@ class ClubTest {
         Participant participant = new Participant();
         participant.setName("John Doe");
         participant.setAge(25);
-        participant.setGender(Participant.Gender.MALE);
-        participant.setSkillLevel(Participant.SkillLevel.ADVANCED);
+        participant.setGender(Gender.Male);
+        participant.setSkillLevel(SkillLevel.BLACK_BELT);
 
         club.setName("TKD Club");
 
