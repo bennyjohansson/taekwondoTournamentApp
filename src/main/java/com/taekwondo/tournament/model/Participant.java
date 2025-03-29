@@ -6,6 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Represents a participant in the Taekwondo tournament.
+ * Contains personal information, skill level, and club affiliation.
+ * Implements validation rules for data integrity:
+ * - Name must be between 2 and 100 characters
+ * - Age must be between 4 and 100 years
+ * - Gender and skill level are required
+ * - Club affiliation is managed through a bidirectional relationship
+ */
 @Entity
 @Table(name = "participants")
 @Data

@@ -66,7 +66,12 @@ public class MatchService {
 
     @Transactional(readOnly = true)
     public List<Match> getMatchesByTournamentAndRound(Long tournamentId, String round) {
-        return matchRepository.findByTournamentIdAndRound(tournamentId, round);
+        try {
+            Match.Round roundEnum = Match.Round.valueOf(round.toUpperCase());
+            return matchRepository.findByTournamentIdAndRound(tournamentId, roundEnum);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid round: " + round);
+        }
     }
 
     @Transactional(readOnly = true)

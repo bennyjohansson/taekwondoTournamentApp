@@ -1,6 +1,8 @@
 package com.taekwondo.tournament.service;
 
 import com.taekwondo.tournament.model.Participant;
+import com.taekwondo.tournament.model.Gender;
+import com.taekwondo.tournament.model.SkillLevel;
 import com.taekwondo.tournament.repository.ParticipantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,12 @@ public class ParticipantService {
 
     @Transactional(readOnly = true)
     public List<Participant> getParticipantsByGenderAndSkillLevel(String gender, String skillLevel) {
-        return participantRepository.findByGenderAndSkillLevel(gender, skillLevel);
+        try {
+            Gender genderEnum = Gender.valueOf(gender.toUpperCase());
+            SkillLevel skillLevelEnum = SkillLevel.valueOf(skillLevel.toUpperCase());
+            return participantRepository.findByGenderAndSkillLevel(genderEnum, skillLevelEnum);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid gender or skill level: " + e.getMessage());
+        }
     }
 } 

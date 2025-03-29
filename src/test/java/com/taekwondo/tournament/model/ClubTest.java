@@ -16,6 +16,10 @@ import java.util.Set;
 /**
  * Test class for the Club entity.
  * Tests validation rules and relationships between Club and Participant entities.
+ * This includes validation of:
+ * - Club name (required)
+ * - Location (optional)
+ * - Participant relationships (bidirectional mapping)
  */
 @DisplayName("Club Entity Tests")
 class ClubTest {
@@ -31,7 +35,6 @@ class ClubTest {
     void setUp() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
-        
         club = new Club();
     }
 
@@ -123,7 +126,7 @@ class ClubTest {
         Participant participant = new Participant();
         participant.setName("John Doe");
         participant.setAge(25);
-        participant.setGender(Gender.Male);
+        participant.setGender(Gender.MALE);
         participant.setSkillLevel(SkillLevel.BLACK_BELT);
 
         club.setName("TKD Club");

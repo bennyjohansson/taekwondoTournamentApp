@@ -1,5 +1,6 @@
 package com.taekwondo.tournament.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "matches")
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Match {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,14 +29,17 @@ public class Match {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "participant1_id")
+    @JsonIgnoreProperties({"matches", "club"})
     private Participant participant1;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "participant2_id")
+    @JsonIgnoreProperties({"matches", "club"})
     private Participant participant2;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "winner_id")
+    @JsonIgnoreProperties({"matches", "club"})
     private Participant winner;
 
     @NotNull(message = "Round is required")
@@ -43,6 +48,7 @@ public class Match {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tournament_id")
+    @JsonIgnoreProperties("matches")
     private Tournament tournament;
 
     private LocalDateTime scheduledTime;

@@ -16,6 +16,11 @@ import java.util.Set;
 /**
  * Test class for the Participant entity.
  * Tests validation rules and data integrity for participant information.
+ * This includes validation of:
+ * - Name (required, length constraints)
+ * - Age (minimum and maximum values)
+ * - Gender (required)
+ * - Skill Level (required)
  */
 @DisplayName("Participant Entity Tests")
 class ParticipantTest {
@@ -31,17 +36,12 @@ class ParticipantTest {
     void setUp() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
-        
         participant = new Participant();
     }
 
     /**
      * Test scenario: Valid participant data
      * Expected: No validation errors when all required fields are properly set
-     * - Name is not blank
-     * - Age is positive
-     * - Gender is specified
-     * - Skill level is specified
      */
     @Test
     @DisplayName("Should validate participant with all required fields")
@@ -50,7 +50,7 @@ class ParticipantTest {
         logger.info("Setting up valid participant data");
         participant.setName("John Doe");
         participant.setAge(25);
-        participant.setGender(Gender.Male);
+        participant.setGender(Gender.MALE);
         participant.setSkillLevel(SkillLevel.BLACK_BELT);
 
         // When
@@ -65,9 +65,7 @@ class ParticipantTest {
 
     /**
      * Test scenario: Blank participant name
-     * Expected: Validation error with message "Name is required"
-     * - Name is blank
-     * - Other fields are valid
+     * Expected: Validation errors for blank name and length constraints
      */
     @Test
     @DisplayName("Should reject participant with blank name")
@@ -76,7 +74,7 @@ class ParticipantTest {
         logger.info("Setting up participant with blank name");
         participant.setName("");
         participant.setAge(25);
-        participant.setGender(Gender.Male);
+        participant.setGender(Gender.MALE);
         participant.setSkillLevel(SkillLevel.BLACK_BELT);
 
         // When
@@ -103,9 +101,7 @@ class ParticipantTest {
 
     /**
      * Test scenario: Negative participant age
-     * Expected: Validation error with message "Age must be at least 4 years"
-     * - Age is negative (-1)
-     * - Other fields are valid
+     * Expected: Validation error for minimum age requirement
      */
     @Test
     @DisplayName("Should reject participant with negative age")
@@ -114,7 +110,7 @@ class ParticipantTest {
         logger.info("Setting up participant with negative age");
         participant.setName("John Doe");
         participant.setAge(-1);
-        participant.setGender(Gender.Male);
+        participant.setGender(Gender.MALE);
         participant.setSkillLevel(SkillLevel.BLACK_BELT);
 
         // When
@@ -131,9 +127,7 @@ class ParticipantTest {
 
     /**
      * Test scenario: Missing participant gender
-     * Expected: Validation error with message "Gender is required"
-     * - Gender is null
-     * - Other fields are valid
+     * Expected: Validation error for required gender field
      */
     @Test
     @DisplayName("Should reject participant with missing gender")
@@ -158,9 +152,7 @@ class ParticipantTest {
 
     /**
      * Test scenario: Missing participant skill level
-     * Expected: Validation error with message "Skill level is required"
-     * - Skill level is null
-     * - Other fields are valid
+     * Expected: Validation error for required skill level field
      */
     @Test
     @DisplayName("Should reject participant with missing skill level")
@@ -169,7 +161,7 @@ class ParticipantTest {
         logger.info("Setting up participant with missing skill level");
         participant.setName("John Doe");
         participant.setAge(25);
-        participant.setGender(Gender.Male);
+        participant.setGender(Gender.MALE);
 
         // When
         logger.info("Validating participant data");

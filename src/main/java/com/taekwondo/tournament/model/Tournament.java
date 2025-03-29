@@ -1,5 +1,6 @@
 package com.taekwondo.tournament.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -11,10 +12,19 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Represents a Taekwondo tournament.
+ * Contains information about:
+ * - Tournament details (name, date, location)
+ * - Physical setup (number of mats)
+ * - Categories (age groups, gender, skill levels)
+ * - Matches
+ */
 @Entity
 @Table(name = "tournaments")
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Tournament {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,6 +32,9 @@ public class Tournament {
 
     @NotBlank(message = "Tournament name is required")
     private String name;
+
+    @NotBlank(message = "Tournament location is required")
+    private String location;
 
     @NotNull(message = "Tournament date is required")
     private LocalDate date;
@@ -35,8 +48,16 @@ public class Tournament {
     private Set<TournamentCategory> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("tournament")
     private Set<Match> matches = new HashSet<>();
 
+    /**
+     * Represents a category in the tournament.
+     * Used to group participants by:
+     * - Gender
+     * - Age range
+     * - Skill level
+     */
     @Embeddable
     @Data
     public static class TournamentCategory {
