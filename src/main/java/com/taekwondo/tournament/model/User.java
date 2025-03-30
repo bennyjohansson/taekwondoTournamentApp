@@ -3,6 +3,7 @@ package com.taekwondo.tournament.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,11 +31,11 @@ public class User {
     @Size(min = 6, message = "Password must be at least 6 characters long")
     private String password;
 
-    @NotBlank(message = "Role is required")
+    @NotNull(message = "Role is required")
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
     public enum UserRole {
-        ADMIN, ORGANIZER, JUDGE, PARTICIPANT
+        ADMIN, CLUB, USER
     }
 } 
