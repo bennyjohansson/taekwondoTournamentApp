@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,12 +31,14 @@ public class AuthController {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider) {
+    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
@@ -83,5 +86,32 @@ public class AuthController {
             logger.error("Unexpected error during login for user: {}. Error: {}", username, e.getMessage(), e);
             return ResponseEntity.status(500).body("An unexpected error occurred");
         }
+    }
+    
+    @PostMapping("/test-password")
+    public ResponseEntity<?> testPassword(@RequestBody Map<String, String> request) {
+        String password = request.get("password");
+        if (password == null) {
+            return ResponseEntity.badRequest().body("Password is required");
+        }
+        
+        String encodedPassword = passwordEncoder.encode(password);
+        logger.info("Password: {}, Encoded: {}", password, encodedPassword);
+        
+        // Get the admin user from the database
+        User adminUser = userService.findByUsername("admin")
+            .orElseThrow(() -> new RuntimeException("Admin user not found"));
+        
+        // Check if the password matches the hash in the database
+        boolean matches = passwordEncoder.matches(password, adminUser.getPassword());
+        logger.info("Password matches database hash: {}", matches);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("password", password);
+        response.put("encoded", encodedPassword);
+        response.put("databaseHash", adminUser.getPassword());
+        response.put("matches", matches);
+        
+        return ResponseEntity.ok(response);
     }
 } 
