@@ -7,57 +7,81 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.taekwondo.tournament.model.User;
+import com.taekwondo.tournament.security.JwtTokenProvider;
 import com.taekwondo.tournament.service.UserService;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider tokenProvider;
 
     @Autowired
-    public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
+    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider) {
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.tokenProvider = tokenProvider;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        logger.info("Login attempt for username: {}", credentials.get("username"));
+    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
+        logger.info("Login attempt for user: {}", loginRequest.get("username"));
         
-        String username = credentials.get("username");
-        String password = credentials.get("password");
+        String username = loginRequest.get("username");
+        String password = loginRequest.get("password");
 
         if (username == null || password == null) {
-            logger.warn("Login failed: Missing username or password");
-            return ResponseEntity.badRequest().body(Map.of("message", "Username and password are required"));
+            logger.warn("Login attempt failed: Missing username or password");
+            return ResponseEntity.badRequest().body("Username and password are required");
         }
 
-        return userService.findByUsername(username)
-            .map(user -> {
-                logger.info("User found: {}", user.getUsername());
-                if (passwordEncoder.matches(password, user.getPassword())) {
-                    logger.info("Password matched for user: {}", username);
-                    Map<String, Object> response = new HashMap<>();
-                    response.put("token", "dummy-token-" + System.currentTimeMillis());
-                    response.put("user", user);
-                    return ResponseEntity.ok(response);
-                } else {
-                    logger.warn("Password mismatch for user: {}", username);
-                    return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials"));
-                }
-            })
-            .orElseGet(() -> {
-                logger.warn("User not found: {}", username);
-                return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials"));
-            });
+        try {
+            logger.debug("Attempting authentication for user: {}", username);
+            logger.debug("Creating authentication token with username: {}", username);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password);
+            logger.debug("Authentication token created, attempting authentication");
+            
+            Authentication authentication = authenticationManager.authenticate(authToken);
+            logger.debug("Authentication successful, getting user details");
+            
+            User user = userService.findByUsername(username)
+                .orElseThrow(() -> {
+                    logger.error("User not found after successful authentication: {}", username);
+                    return new RuntimeException("User not found after successful authentication");
+                });
+            
+            logger.debug("Generating JWT token for user: {}", username);
+            String token = tokenProvider.generateToken(authentication);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("username", user.getUsername());
+            response.put("role", user.getRole());
+            
+            logger.info("Login successful for user: {}, role: {}", username, user.getRole());
+            return ResponseEntity.ok(response);
+            
+        } catch (AuthenticationException e) {
+            logger.error("Authentication failed for user: {}. Error: {}", username, e.getMessage());
+            return ResponseEntity.status(401).body("Invalid credentials");
+        } catch (Exception e) {
+            logger.error("Unexpected error during login for user: {}. Error: {}", username, e.getMessage(), e);
+            return ResponseEntity.status(500).body("An unexpected error occurred");
+        }
     }
 } 
