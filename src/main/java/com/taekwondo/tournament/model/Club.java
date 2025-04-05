@@ -24,7 +24,7 @@ public class Club {
 
     private String location;
 
-    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("club")
     private List<Participant> participants = new ArrayList<>();
 } 

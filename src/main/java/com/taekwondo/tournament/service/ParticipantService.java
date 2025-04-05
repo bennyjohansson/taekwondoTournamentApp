@@ -2,6 +2,8 @@ package com.taekwondo.tournament.service;
 
 import com.taekwondo.tournament.model.Participant;
 import com.taekwondo.tournament.repository.ParticipantRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +14,7 @@ import java.util.Optional;
 @Service
 public class ParticipantService {
     
+    private static final Logger logger = LoggerFactory.getLogger(ParticipantService.class);
     private final ParticipantRepository participantRepository;
 
     @Autowired
@@ -21,7 +24,15 @@ public class ParticipantService {
 
     @Transactional(readOnly = true)
     public List<Participant> getAllParticipants() {
-        return participantRepository.findAll();
+        logger.info("Starting to retrieve all participants from the database");
+        try {
+            List<Participant> participants = participantRepository.findAll();
+            logger.info("Successfully retrieved {} participants from the database", participants.size());
+            return participants;
+        } catch (Exception e) {
+            logger.error("Error retrieving participants from the database", e);
+            throw e;
+        }
     }
 
     @Transactional(readOnly = true)
